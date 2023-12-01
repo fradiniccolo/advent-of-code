@@ -1,1 +1,3 @@
-Here my Python solutions for the puzzles from [Advent of Code](https://adventofcode.com/) 
+My solutions to the puzzles from [Advent of Code](https://adventofcode.com/).
+
+Publishing them here will help me understand how GitHub works.
