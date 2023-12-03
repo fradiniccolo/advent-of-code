@@ -1,3 +1,3 @@
 My solutions to the puzzles from [Advent of Code](https://adventofcode.com/).
 
-By publishing them here I will better understand how GitHub works.
+Publishing them here is a way for me to better understand how GitHub works.
