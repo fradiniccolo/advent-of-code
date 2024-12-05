@@ -9,3 +9,15 @@ differences = [abs(item0-item1) for item0, item1 in zip(list0, list1)]
 part_one = sum(differences)
 
 print(part_one)
+
+
+records = {}
+
+for item1 in list1:
+    if item1 in list0:
+        if item1 not in records.keys():
+            records[item1] = item1
+        else:
+            records[item1] += item1
+
+print(sum(records.values()))
