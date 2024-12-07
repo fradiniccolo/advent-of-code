@@ -1,7 +1,7 @@
-with open("2024/01.txt") as _:
-    data = _.read().strip()
+with open("01.txt") as _:
+    puzzle_input = _.read().strip()
 
-lists = [row.split('  ') for row in data.split('\n')]
+lists = [row.split('  ') for row in puzzle_input.split('\n')]
 list0, list1 = list(zip(*lists[::-1]))
 list0 = sorted(list(map(int, list0)))
 list1 = sorted(list(map(int, list1)))
