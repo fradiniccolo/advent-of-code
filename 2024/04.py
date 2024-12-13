@@ -1,8 +1,5 @@
 import re
 
-with open("04.txt") as _:
-    puzzle_input = _.read().strip()
-
 # puzzle_input = """
 # MMMSXXMASM
 # MSAMXMSMSA
@@ -16,36 +13,63 @@ with open("04.txt") as _:
 # MXMXAXMASX
 # """.strip()
 
-xmas_count = 0
+with open("04.txt") as _:
+    puzzle_input = _.read().strip()
 
-# horizontal search
-xmas_count += len(re.findall('XMAS', puzzle_input))
-xmas_count += len(re.findall('XMAS'[::-1], puzzle_input))
 
-# vertical search
-flipped_input = [[char for char in row] for row in puzzle_input.split('\n')]
-flipped_input = list(zip(*flipped_input))
-flipped_input = [''.join(row) for row in flipped_input]
-flipped_input = '\n'.join([''.join(row) for row in flipped_input])
+class Puzzle:
 
-xmas_count += len(re.findall('XMAS', flipped_input))
-xmas_count += len(re.findall('XMAS'[::-1], flipped_input))
+    def __init__(self, puzzle_text):
+        self.rows = puzzle_text.split('\n')
+        self.columns = [''.join(col) for col in zip(*self.rows)]
+        self.size = len(self.rows[0])
 
-# diagonal search
-rows = puzzle_input.split('\n')
-size = len(rows)
-primary_diagonals = ['' for _ in range(2 * size - 1)]
-secondary_diagonals = ['' for _ in range(2 * size - 1)]
+        # Calculate diagonals
+        rows = self.rows
+        primary_diagonals = ['' for _ in range(2 * self.size - 1)]
+        secondary_diagonals = ['' for _ in range(2 * self.size - 1)]
 
-for i in range(size):
-    for j in range(size):
-        primary_diagonals[i + j] += rows[i][j]
-        secondary_diagonals[i - j + (size - 1)] += rows[i][j]
+        for row in range(self.size):
+            for col in range(self.size):
+                primary_diagonals[row + col] += rows[row][col]
+                secondary_diagonals[row - col +
+                                    (self.size - 1)] += rows[row][col]
 
-diagonals = primary_diagonals + secondary_diagonals
-diagonals = '\n'.join(diagonals)
+        self.diagonals = primary_diagonals + secondary_diagonals
 
-xmas_count += len(re.findall('XMAS', diagonals))
-xmas_count += len(re.findall('XMAS'[::-1], diagonals))
+    def count_xmas(self):
+        unfolded_text = '\n'.join([
+            '\n'.join(self.rows),
+            '\n'.join(self.columns),
+            '\n'.join(self.diagonals),
+        ])
+        xmas_count = len(re.findall('XMAS', unfolded_text))
+        xmas_count += len(re.findall('XMAS'[::-1], unfolded_text))
+        return xmas_count
 
-print(xmas_count)
+    def get_x_strokes(self, row_index, col_index):
+        square = [
+            self.rows[row_index - 1][col_index - 1:col_index + 2],
+            self.rows[row_index][col_index - 1:col_index + 2],
+            self.rows[row_index + 1][col_index - 1:col_index + 2],
+        ]
+        return [
+            f"{square[0][0]}{square[1][1]}{square[2][2]}",
+            f"{square[0][2]}{square[1][1]}{square[2][0]}",
+        ]
+
+    def count_x_mas(self):
+        xmas_count = 0
+        for row_index in range(1, self.size - 1):
+            for col_index in range(1, self.size - 1):
+                strokes = self.get_x_strokes(row_index, col_index)
+                if all(stroke in ['MAS', 'SAM'] for stroke in strokes):
+                    xmas_count += 1
+        return xmas_count
+
+
+puzzle = Puzzle(puzzle_input)
+
+
+print(puzzle.count_xmas())
+print(puzzle.count_x_mas())
