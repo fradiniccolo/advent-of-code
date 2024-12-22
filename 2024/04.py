@@ -1,18 +1,5 @@
 import re
 
-# puzzle_input = """
-# MMMSXXMASM
-# MSAMXMSMSA
-# AMXSXMAAMM
-# MSAMASMSMX
-# XMASAMXAMM
-# XXAMMXXAMA
-# SMSMSASXSS
-# SAXAMASAAA
-# MAMMMXMMMM
-# MXMXAXMASX
-# """.strip()
-
 with open("04.txt") as _:
     puzzle_input = _.read().strip()
 
