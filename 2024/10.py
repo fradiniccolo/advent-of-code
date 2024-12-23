@@ -1,5 +1,3 @@
-from pprint import pprint
-
 with open("10.txt") as _:
     puzzle_input = _.read().strip()
 
@@ -8,35 +6,23 @@ class Node:
 
     def __init__(self, value):
         self.value = value
-        self.connections = []
+        self.reachable_nodes = []
 
-    def __str__(self):
-        return f"Node(value={self.value}, conns={[c.value for c in self.connections]})"
 
-    def __repr__(self):
-        return f"Node(value={self.value}, conns={[c.value for c in self.connections]})"
-    
 class Trailer:
-    
+
     def __init__(self, head):
         self.head = head
         self.tails = set()
         self.find_tails(self.head)
         self.trailer_score = len(self.tails)
 
-    
     def find_tails(self, current_node):
         if current_node.value == 9:
             self.tails.add(current_node)
         else:
             for connected_node in current_node.connections:
                 self.find_tails(connected_node)
-
-    def __str__(self):
-        return f"Trailer(head={self.head})"
-
-    def __repr__(self):
-        return f"Trailer(head={self.head})"
 
 
 class Topomap:
@@ -48,7 +34,7 @@ class Topomap:
         self.setup()
         self.map_score = 0
         self.get_map_score()
-    
+
     def setup(self):
         for row_idx, row in enumerate(self.matrix):
             for col_idx, value in enumerate(row):
@@ -71,18 +57,14 @@ class Topomap:
                 if south_node.value - node.value == 1:
                     node.connections.append(south_node)
 
-
     def get_trailers(self):
         trailheads = [node for node in self.nodes.values() if node.value == 0]
         return [Trailer(trailhead) for trailhead in trailheads]
 
-
     def get_map_score(self):
         for trailer in self.get_trailers():
             self.map_score += trailer.trailer_score
-    
+
+
 topomap = Topomap(puzzle_input)
-pprint(topomap.matrix)
-# print(topomap.size)
-# pprint(topomap.nodes)
 print(topomap.map_score)
