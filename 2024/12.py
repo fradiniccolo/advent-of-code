@@ -1,23 +1,23 @@
-with open("12e.txt") as _:
+with open("12.txt") as _:
     puzzle_input = _.read().strip()
-
-from pprint import pprint
 
 
 class Garden:
 
     def __init__(self, map_text):
         self.size = None  # square
-        self.plots = None
-        self.regions = None
+        self.plots = []
+        self.regions = []
         self.setup(map_text)
 
     def setup(self, input):
         self.get_plots_from_input(input)
         self.get_regions()
+        self.get_region_areas()
+        self.get_region_perimeters()
 
     def get_plots_from_input(self, text):
-        
+
         # get plots
         rows = text.split('\n')
         self.size = len(rows)
@@ -44,45 +44,43 @@ class Garden:
 
     def get_regions(self):
 
-        def assign_region(plot):
-            
-            # assign region to plot
-            region_found = False
-            
-            if self.regions is None:
-                region = Region(plot.plant, plot)
-                self.regions = [region]
-                region_found = True
-            
-            else:
-                for region in self.regions:
-                    if plot.plant == region.plant:
-                        if any([plot == neighbour
-                                for region_plot in region.plots 
-                                for neighbour in region_plot.neighbours]):
-                            region_found = True
-                            break
-            
-            if not region_found:
-                region = Region(plot.plant, plot)
-                self.regions.append(region)
+        def make_region(plot):
 
+            # initialise region
+            region = Region(plot.plant, plot)
+            self.regions.append(region)
             plot.region = region
 
-
             # check plot's neighbours
-            for neighbour in plot.neighbours:
-                if neighbour in spare_plots:
-                    if plot.plant == neighbour.plant:
-                        neighbour.region = plot.region
-                        index = spare_plots.index(neighbour)
-                        plot.region.plots.append(spare_plots.pop(index))
-                
+            def check_neighbours(plot):
+                for neighbour in plot.neighbours:
+                    if neighbour in spare_plots:
+                        if neighbour.plant == plot.plant:
+                            neighbour.region = plot.region
+                            index = spare_plots.index(neighbour)
+                            plot.region.plots.append(spare_plots.pop(index))
+                            check_neighbours(neighbour)
+
+            check_neighbours(plot)
 
         spare_plots = [plot for plot in self.plots]
-
         while spare_plots:
-            assign_region(spare_plots.pop(0))
+            make_region(spare_plots.pop(0))
+
+    def get_region_areas(self):
+        for region in self.regions:
+            region.area = len(region.plots)
+
+    def get_region_perimeters(self):
+        for region in self.regions:
+            perimeter = 0
+            for plot in region.plots:
+                plot_perimeter = 4
+                for neighbour in plot.neighbours:
+                    if neighbour.plant == plot.plant:
+                        plot_perimeter -= 1
+                perimeter += plot_perimeter
+            region.perimeter = perimeter
 
 
 class Region:
@@ -105,31 +103,8 @@ class Plot:
         self.plant = plant
         self.neighbours = []
         self.region = None
-        self.setup()
 
-    def __repr__(self):
-        neighbours = ', '.join(
-            [neighbour.plant for neighbour in self.neighbours])
-        return f"Plot(plant={self.plant}, coords={(self.x, self.y)}, neighbours=({neighbours}))"
-
-    def setup(self):
-        pass
-
-
-print(puzzle_input)
 
 garden_map = Garden(puzzle_input)
-# for plot in garden_map.plots.values():
-#     print(plot)
 
-for map_region in garden_map.regions:
-    print(map_region.plant, len(map_region.plots))
-    # pprint(region)
-
-# scan map plot by plot
-# determine each plot neighbours
-
-# use tree nodes to determine regions (one-to-many)
-#     what is the key/id?
-# get area by counting plots in region
-# get perimeter by counting all not connected edges
+print(sum([region.area*region.perimeter for region in garden_map.regions]))
