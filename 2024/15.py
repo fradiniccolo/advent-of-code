@@ -27,17 +27,13 @@ class Warehouse:
     def simulate(self):
         for move in self.robot.moves:
 
-            # check in the direction of move
             next = self.robot.get_next_item(move)
             if isinstance(next, type(None)):
                 self.robot.move(move)
                 continue
-            if isinstance(next, Wall):  # can't move
-                continue
-            
-            # check beyond box
+
+            queue = [next]
             if isinstance(next, Box):
-                queue = [next]
                 next = next.get_next_item(move)
                 while isinstance(next, Box):
                     queue.append(next)
@@ -75,13 +71,16 @@ class Item:
     def __repr__(self):
         return f"{type(self).__name__}{self.x, self.y}"
 
-    def get_next_item(self, move):
-        dx, dy = {
+    def move_to_deltas(self, move):
+        return {
             '>': (1, 0),
             '^': (0, -1),
             '<': (-1, 0),
             'v': (0, 1),
         }[move]
+
+    def get_next_item(self, move):
+        dx, dy = self.move_to_deltas(move)
         next_x = self.x + dx
         next_y = self.y + dy
         for item in self.environment.items:
@@ -90,12 +89,7 @@ class Item:
                     return item
 
     def move(self, move):
-        dx, dy = {
-            '>': (1, 0),
-            '^': (0, -1),
-            '<': (-1, 0),
-            'v': (0, 1),
-        }[move]
+        dx, dy = self.move_to_deltas(move)
         self.x += dx
         self.y += dy
 
