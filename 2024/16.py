@@ -24,11 +24,9 @@ class Maze:
         # connect all nodes recursively
         self.start_node.connect()
 
-        # find all paths
+        # find all paths recursively
         self.paths.append(Path(self.start_node))
-        while any([path.is_winner is None for path in self.paths]):
-            for path in self.paths:
-                path.explore()
+        self.paths[0].explore()
 
 
 class Node:
@@ -59,49 +57,54 @@ class Path:
 
     def __init__(self, start):
         self.nodes = [start]
-        self.cost = 0
-        self.costs = [0]
         self.is_winner = None
+        self.costs = [0]
         self.maze = start.maze
 
     def __repr__(self):
         nodes = [f"({node.x}, {node.y}):{cost}"
                  for node, cost in zip(self.nodes, self.costs)]
-        return f"Path(\n    {'\n  → '.join(nodes)})"
+        return f"Path(\n    {'\n  → '.join(nodes)}\n)"
+
+    def get_total_cost(self):
+        return sum(self.costs)
+
+    def add_node(self, node):
+        self.nodes.append(node)
+        self.update_cost()
 
     def explore(self):
 
-        if not self.is_winner is None:
+        if self.is_winner is not None:
             return
 
         # did path reach the end?
-        head = self.nodes[-1]
-        if head == self.maze.end_node:
+        head_node = self.nodes[-1]
+        if head_node == self.maze.end_node:
             self.is_winner = True
             return
 
         # did path reach a fork?
         next_nodes = [
-            node for node in head.connected_to
+            node for node in head_node.connected_to
             if node not in self.nodes]
 
         # dead end
         if not next_nodes:
-            # self.maze.paths.remove(self)
             self.is_winner = False
             return
 
         for index, next_node in enumerate(next_nodes):
-            if index == len(next_nodes)-1:
-                # extend current path
-                self.nodes.append(next_node)
-                self.update_cost()
-            else:
-                # initiate new paths
+            if index != len(next_nodes)-1:
+                # initiate new paths by copying current path
                 new_path = self.copy()
-                new_path.nodes.append(next_node)
-                new_path.update_cost()
+                new_path.add_node(next_node)
+                new_path.explore()
                 self.maze.paths.append(new_path)
+            else:
+                # lastly, extend current path
+                self.add_node(next_node)
+                self.explore()
 
     def update_cost(self):
 
@@ -111,30 +114,25 @@ class Path:
                 node0, node1, node2 = nodes
                 vector0 = (node1.x-node0.x, node1.y-node0.y)
                 vector1 = (node2.x-node1.x, node2.y-node1.y)
-                if vector0 == vector1:
-                    return True
-                return False
 
             else:
                 node1, node2 = nodes
                 vector1 = (node2.x-node1.x, node2.y-node1.y)
-                if vector1 == (1, 0):
-                    return True
-                return False
+                vector0 = (1, 0)
 
-        last_nodes = self.nodes[-3:]  # that's 2 or 3 nodes
+            if vector0 == vector1:
+                return True
+            return False
 
-        if are_nodes_aligned(last_nodes):
-            self.cost += 1
-            self.costs.append(1)
-        else:
-            self.cost += 1000
+        self.costs.append(1)
+        if not are_nodes_aligned(self.nodes[-3:]):
             self.costs.append(1000)
 
     def copy(self):
         new_path = Path(self.maze.start_node)  # ugly
         new_path.nodes = self.nodes[:]
-        new_path.cost = self.cost
+        new_path.is_winner = self.is_winner
+        new_path.costs = self.costs[:]
         new_path.maze = self.maze
         return new_path
 
@@ -144,8 +142,8 @@ with open("16e.txt") as _:
 
 maze = Maze(puzzle_input)
 
-min_path = min([path for path in maze.paths if path.is_winner],
-               key=lambda path: path.cost)
+winning_paths = [path for path in maze.paths if path.is_winner]
+best_path = min(winning_paths, key=lambda path: path.get_total_cost())
 
-print(min_path)
-print(min_path.cost)
+print(best_path)
+print(best_path.get_total_cost())
