@@ -1,16 +1,13 @@
 with open("01.txt", encoding="utf-8") as f:
     puzzle_input = f.read().strip()
 
-instructions = puzzle_input.split("\n")
+instructions = puzzle_input.replace("L", "-").replace("R", "").split("\n")
+instructions = map(int, instructions)
 
 current = 50
 count = 0
 for instruction in instructions:
-    if instruction[0] == "L":
-        current -= int(instruction[1:])
-    else:
-        current += int(instruction[1:])
-    current %= 100
+    current += instruction
     if current == 0:
         count += 1
 print(count)
