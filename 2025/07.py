@@ -15,33 +15,52 @@ for index, char in enumerate(puzzle_input.replace("\n", "")):
 entrance = [pos for pos, char in room_map.items() if char == "S"][0]
 splitters = [pos for pos, char in room_map.items() if char == "^"]
 
-split_positions = set()
-visited_positions = set()
 
+class Node:
+    
+    def __init__(self, position):
+        self.position = position
+        self.children = self.add_children()
+    
+    def __repr__(self):
+        return f"Node({self.position})"
 
-def beam_step(position):
-    global split_positions, visited_positions
-    if position in visited_positions:
-        return
-    visited_positions.add(position)
+    def add_children(self):
+        children = []
+        x, y = self.position
+        if (x, y + 1) in room_map.keys():
+            if room_map[(x, y + 1)] != "^":
+                return [Node((x, y + 1))]
+            else:
+                return [Node((x - 1, y + 1)), Node((x + 1, y + 1))]
+        return children
 
-    x, y = position
+head = Node(entrance)
 
-    below = (x, y + 1)
-    cell = room_map.get(below)
+from collections import deque
+def bfs(root):
+    if not root:
+        return []
+        
+    result = []
+    visited = set()
+    splits = []
+    queue = deque([root])
+    
+    while queue:
+        node = queue.popleft()
+        if node.position in visited:
+            continue
+        visited.add(node.position)
+        result.append(node.position)
+        if len(node.children) > 1:
+            splits.append(node.position)
+        
+        for child in node.children:
+            queue.append(child)
+    
+    return result, splits
 
-    if cell == ".":
-        beam_step(below)
-
-    elif cell == "^":
-        beam_step((x - 1, y + 1))
-        beam_step((x + 1, y + 1))
-        split_positions.add(below)
-
-    return
-
-
-beam_step(entrance)
-
-split_count = len(split_positions)
-print(split_count)
+result, splits = bfs(head)
+print(len(set(splits)))
+print(len(splits)+1)
